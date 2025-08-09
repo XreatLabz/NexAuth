@@ -106,6 +106,19 @@ java {
     }
 }
 
+// Ensure normal builds produce the shaded jar and avoid confusion with a thin jar
+tasks.named<Jar>("jar") {
+    enabled = false
+}
+
+tasks.named("assemble") {
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.named("build") {
+    dependsOn(tasks.shadowJar)
+}
+
 tasks.withType<Jar> {
     from("../LICENSE.txt")
 }

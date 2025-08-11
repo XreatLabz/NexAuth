@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("java")
     id("io.github.goooler.shadow") version "8.1.8"
-    id("net.kyori.blossom").version("2.1.0")
+    id("net.kyori.blossom").version("1.3.1")
     id("java-library")
     id("xyz.kyngs.libby.plugin").version("1.2.1")
     id("xyz.kyngs.mcupload.plugin").version("0.3.4")

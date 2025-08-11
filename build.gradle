@@ -1,23 +1,25 @@
 plugins {
     id 'org.cadixdev.licenser' version '0.6.1'
+    id 'com.github.ben-manes.versions' version '0.52.0'
 }
 
 defaultTasks 'updateLicenses', 'shadowJar'
 
-version '0.0.1-beta2'
+version = '0.0.1-beta2'
 
 subprojects {
     version = rootProject.version
     group = 'xyz.xreatlabs.nexauth'
 
     apply plugin: 'org.cadixdev.licenser'
+    apply plugin: 'com.github.ben-manes.versions'
 
     repositories {
         mavenLocal()
         mavenCentral()
 
         maven {
-            url 'https://jitpack.io'
+            url = uri('https://jitpack.io')
         }
     }
 

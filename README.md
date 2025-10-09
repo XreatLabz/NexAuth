@@ -31,9 +31,32 @@ alt="Contributors listed"></img>
 - Migration of a player's data by using one command
 - Geyser (Bedrock) support using [Floodgate](https://github.com/xreatlabs/NexAuth/wiki/Floodgate)
 
+## Required Dependencies
+
+### NexLimbo (Recommended for Proxy Setups)
+
+For the best authentication experience on proxy servers (Velocity/BungeeCord), we highly recommend using **NexLimbo** - a lightweight limbo server specifically designed and optimized for NexAuth.
+
+**Why NexLimbo?**
+- Specifically designed for NexAuth's authentication flow
+- Lightweight and high-performance
+- Seamless integration with all NexAuth features
+- Enhanced security for authentication process
+
+**Installation:**
+1. Download NexLimbo from [GitHub Releases](https://github.com/Xreatlabs/NexLimbo/releases)
+2. Install the appropriate version for your proxy:
+   - `NexLimbo-Velocity.jar` for Velocity
+   - `NexLimbo-Bungee.jar` for BungeeCord/Waterfall
+3. Configure the limbo settings in NexAuth's config
+4. Restart your proxy
+
+**Repository:** [https://github.com/Xreatlabs/NexLimbo](https://github.com/Xreatlabs/NexLimbo)
+
 ## Considerations
 
-- When using on proxy, you need to secure your limbo
+- When using on proxy, install **NexLimbo** for secure authentication limbo
+- Ensure your backend servers are properly secured and not directly accessible
 
 ## Platforms
 

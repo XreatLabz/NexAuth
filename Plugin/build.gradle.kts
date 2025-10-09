@@ -21,7 +21,7 @@ mcupload {
             loaders = listOf("paper", "purpur", "bungeecord", "waterfall", "velocity")
             projectId = "tL0SCXYq"
             gameVersions = listOf(
-                "1.21.8", "1.21.7", "1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21",
+                "1.21.10", "1.21.9", "1.21.8", "1.21.7", "1.21.6", "1.21.5", "1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21",
                 "1.20.6", "1.20.5", "1.20.4", "1.20.3", "1.20.2", "1.20.1", "1.20",
                 "1.19.4", "1.19.3", "1.19.2", "1.19.1", "1.19",
                 "1.18.2", "1.18.1", "1.18",
@@ -138,14 +138,17 @@ libby {
 
 configurations.all {
     // I hate this, but it needs to be done as bungeecord does not support newer versions of adventure, and packetevents includes it
-    resolutionStrategy {
-        force("net.kyori:adventure-text-minimessage:4.14.0")
-        force("net.kyori:adventure-text-serializer-gson:4.14.0")
-        force("net.kyori:adventure-text-serializer-legacy:4.14.0")
-        force("net.kyori:adventure-text-serializer-json:4.14.0")
-        force("net.kyori:adventure-api:4.14.0")
-        force("net.kyori:adventure-nbt:4.14.0")
-        force("net.kyori:adventure-key:4.14.0")
+    // Only apply to runtime configurations, not compile configurations to allow Paper API to compile with its required Adventure version
+    if (name.contains("runtime", ignoreCase = true) && !name.contains("compile", ignoreCase = true)) {
+        resolutionStrategy {
+            force("net.kyori:adventure-text-minimessage:4.14.0")
+            force("net.kyori:adventure-text-serializer-gson:4.14.0")
+            force("net.kyori:adventure-text-serializer-legacy:4.14.0")
+            force("net.kyori:adventure-text-serializer-json:4.14.0")
+            force("net.kyori:adventure-api:4.14.0")
+            force("net.kyori:adventure-nbt:4.14.0")
+            force("net.kyori:adventure-key:4.14.0")
+        }
     }
 }
 
@@ -201,7 +204,7 @@ dependencies {
     libby("org.bstats:bstats-bukkit:3.1.0")
 
     //Paper
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     //compileOnly "com.comphenix.protocol:ProtocolLib:5.1.0"
     libby("com.github.retrooper:packetevents-spigot:2.9.4")
     compileOnly("io.netty:netty-transport:4.1.122.Final")
@@ -214,8 +217,8 @@ dependencies {
     implementation("xyz.kyngs.libby:libby-bungee:1.7.1")
     implementation("xyz.kyngs.libby:libby-paper:1.7.1")
 
-    //NanoLimboPlugin
-    compileOnly("com.github.bivashy.NanoLimboPlugin:api:1.0.15")
+    //NexLimbo (local)
+    compileOnly(project(":NexLimbo:api"))
 }
 
 tasks.withType<ProcessResources> {

@@ -15,7 +15,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 
-import ua.nanit.limbo.NanoLimbo;
+import ua.nanit.limbo.NexLimbo;
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.data.InfoForwarding;
 import xyz.xreatlabs.nexauth.common.integration.nanolimbo.NanoLimboIntegration;
@@ -27,7 +27,7 @@ public class VelocityNanoLimboIntegration extends NanoLimboIntegration<Registere
 
     public VelocityNanoLimboIntegration(ProxyServer proxyServer, String portRange) {
         super(portRange);
-        this.classLoader = NanoLimbo.class.getClassLoader();
+        this.classLoader = NexLimbo.class.getClassLoader();
         this.proxyServer = proxyServer;
     }
 

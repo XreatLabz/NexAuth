@@ -236,7 +236,7 @@ public class VelocityNexAuth extends AuthenticNexAuth<Player, RegisteredServer> 
     @Nullable
     @Override
     public LimboIntegration<RegisteredServer> getLimboIntegration() {
-        if (pluginPresent("nanolimbovelocity") && limboIntegration == null) {
+        if (pluginPresent("nexlimbovelocity") && limboIntegration == null) {
             limboIntegration = new VelocityNanoLimboIntegration(server,
                     getConfiguration().get(ConfigurationKeys.LIMBO_PORT_RANGE));
         }

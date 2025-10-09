@@ -38,7 +38,7 @@ import java.util.concurrent.Executors;
                 @Dependency(id = "luckperms", optional = true),
                 @Dependency(id = "protocolize", optional = true),
                 @Dependency(id = "redisbungee", optional = true),
-                @Dependency(id = "nanolimbovelocity", optional = true)
+                @Dependency(id = "nexlimbovelocity", optional = true)
         }
 )
 public class VelocityBootstrap implements NexAuthProvider<Player, RegisteredServer> {

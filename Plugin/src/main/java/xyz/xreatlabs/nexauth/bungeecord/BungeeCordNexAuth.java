@@ -211,8 +211,8 @@ public class BungeeCordNexAuth extends AuthenticNexAuth<ProxiedPlayer, ServerInf
     @Nullable
     @Override
     public LimboIntegration<ServerInfo> getLimboIntegration() {
-        if (pluginPresent("NanoLimboBungee") && limboIntegration == null) {
-            limboIntegration = new BungeeNanoLimboIntegration(bootstrap.getProxy().getPluginManager().getPlugin("NanoLimboBungee").getClass().getClassLoader(),
+        if (pluginPresent("NexLimboBungee") && limboIntegration == null) {
+            limboIntegration = new BungeeNanoLimboIntegration(bootstrap.getProxy().getPluginManager().getPlugin("NexLimboBungee").getClass().getClassLoader(),
                     getConfiguration().get(ConfigurationKeys.LIMBO_PORT_RANGE));
         }
         return limboIntegration;

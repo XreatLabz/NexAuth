@@ -26,7 +26,7 @@ import xyz.xreatlabs.nexauth.api.PlatformHandle;
 import xyz.xreatlabs.nexauth.api.database.User;
 import xyz.xreatlabs.nexauth.api.event.exception.EventCancelledException;
 import xyz.xreatlabs.nexauth.api.integration.LimboIntegration;
-import xyz.xreatlabs.nexauth.bungeecord.integration.BungeeNanoLimboIntegration;
+import xyz.xreatlabs.nexauth.bungeecord.integration.BungeeNativeLimboIntegration;
 import xyz.xreatlabs.nexauth.common.AuthenticNexAuth;
 import xyz.xreatlabs.nexauth.common.config.ConfigurationKeys;
 import xyz.xreatlabs.nexauth.common.image.AuthenticImageProjector;
@@ -211,9 +211,8 @@ public class BungeeCordNexAuth extends AuthenticNexAuth<ProxiedPlayer, ServerInf
     @Nullable
     @Override
     public LimboIntegration<ServerInfo> getLimboIntegration() {
-        if (pluginPresent("NexLimboBungee") && limboIntegration == null) {
-            limboIntegration = new BungeeNanoLimboIntegration(bootstrap.getProxy().getPluginManager().getPlugin("NexLimboBungee").getClass().getClassLoader(),
-                    getConfiguration().get(ConfigurationKeys.LIMBO_PORT_RANGE));
+        if (limboIntegration == null) {
+            limboIntegration = new BungeeNativeLimboIntegration(getConfiguration().get(ConfigurationKeys.LIMBO_PORT_RANGE));
         }
         return limboIntegration;
     }

@@ -8,26 +8,24 @@ package xyz.xreatlabs.nexauth.velocity.integration;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.lang.reflect.Method;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 
-import ua.nanit.limbo.NexLimbo;
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.data.InfoForwarding;
-import xyz.xreatlabs.nexauth.common.integration.nanolimbo.NanoLimboIntegration;
+import xyz.xreatlabs.nexauth.common.integration.nativelimbo.NativeLimboIntegration;
 
-public class VelocityNanoLimboIntegration extends NanoLimboIntegration<RegisteredServer> {
+public class VelocityNativeLimboIntegration extends NativeLimboIntegration<RegisteredServer> {
 
     private final ClassLoader classLoader;
     private final ProxyServer proxyServer;
 
-    public VelocityNanoLimboIntegration(ProxyServer proxyServer, String portRange) {
+    public VelocityNativeLimboIntegration(ProxyServer proxyServer, String portRange) {
         super(portRange);
-        this.classLoader = NexLimbo.class.getClassLoader();
+        this.classLoader = getClass().getClassLoader();
         this.proxyServer = proxyServer;
     }
 
@@ -64,7 +62,7 @@ public class VelocityNanoLimboIntegration extends NanoLimboIntegration<Registere
                     return FORWARDING_FACTORY.modern(secret);
                 case "BUNGEEGUARD":
                     byte[] bungeeSecret = (byte[]) configClass.getMethod("getForwardingSecret").invoke(velocityConfiguration);
-                    return FORWARDING_FACTORY.bungeeGuard(Collections.singleton(new String(bungeeSecret, StandardCharsets.UTF_8)));
+                    return FORWARDING_FACTORY.bungeeGuardFromSecret(bungeeSecret);
                 default:
                     // Fallback to NONE if unknown mode
                     return FORWARDING_FACTORY.none();

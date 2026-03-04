@@ -4,15 +4,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package xyz.xreatlabs.nexauth.common.integration.nanolimbo;
-
-import java.util.Collection;
-import java.util.Collections;
+package xyz.xreatlabs.nexauth.common.integration.nativelimbo;
 
 import ua.nanit.limbo.server.Command;
 import ua.nanit.limbo.server.CommandHandler;
 
+import java.util.Collection;
+import java.util.Collections;
+
 public class DummyCommandHandler implements CommandHandler<Command> {
+
     @Override
     public Collection<Command> getCommands() {
         return Collections.emptyList();

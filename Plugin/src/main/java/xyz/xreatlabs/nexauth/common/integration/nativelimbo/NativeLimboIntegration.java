@@ -4,7 +4,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package xyz.xreatlabs.nexauth.common.integration.nanolimbo;
+package xyz.xreatlabs.nexauth.common.integration.nativelimbo;
+
+import ua.nanit.limbo.server.LimboServer;
+import ua.nanit.limbo.server.data.InfoForwarding;
+import xyz.xreatlabs.nexauth.api.integration.LimboIntegration;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,22 +16,19 @@ import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.util.Optional;
 
-import ua.nanit.limbo.server.LimboServer;
-import ua.nanit.limbo.server.data.InfoForwarding;
-import xyz.xreatlabs.nexauth.api.integration.LimboIntegration;
-
-public abstract class NanoLimboIntegration<S> implements LimboIntegration<S> {
+public abstract class NativeLimboIntegration<S> implements LimboIntegration<S> {
 
     protected static final InfoForwardingFactory FORWARDING_FACTORY = new InfoForwardingFactory();
-    private final int portMin, portMax;
+    private final int portMin;
+    private final int portMax;
 
-    public NanoLimboIntegration(String portRange) {
+    public NativeLimboIntegration(String portRange) {
         this.portMin = Integer.parseInt(portRange.split("-")[0]);
         this.portMax = Integer.parseInt(portRange.split("-")[1]);
     }
 
     protected LimboServer createLimboServer(SocketAddress address) {
-        return new LimboServer(new NanoLimboConfig(address, createForwarding()), new DummyCommandHandler(), classLoader());
+        return new LimboServer(new NativeLimboConfig(address, createForwarding()), new DummyCommandHandler(), classLoader());
     }
 
     protected abstract InfoForwarding createForwarding();
@@ -43,6 +44,4 @@ public abstract class NanoLimboIntegration<S> implements LimboIntegration<S> {
         }
         return Optional.empty();
     }
-
-
 }

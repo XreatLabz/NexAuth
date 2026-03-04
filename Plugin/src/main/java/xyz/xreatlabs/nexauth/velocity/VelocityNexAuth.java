@@ -33,7 +33,7 @@ import xyz.xreatlabs.nexauth.common.config.ConfigurationKeys;
 import xyz.xreatlabs.nexauth.common.image.AuthenticImageProjector;
 import xyz.xreatlabs.nexauth.common.image.protocolize.ProtocolizeImageProjector;
 import xyz.xreatlabs.nexauth.common.util.CancellableTask;
-import xyz.xreatlabs.nexauth.velocity.integration.VelocityNanoLimboIntegration;
+import xyz.xreatlabs.nexauth.velocity.integration.VelocityNativeLimboIntegration;
 
 import java.io.File;
 import java.io.InputStream;
@@ -236,8 +236,8 @@ public class VelocityNexAuth extends AuthenticNexAuth<Player, RegisteredServer> 
     @Nullable
     @Override
     public LimboIntegration<RegisteredServer> getLimboIntegration() {
-        if (pluginPresent("nexlimbovelocity") && limboIntegration == null) {
-            limboIntegration = new VelocityNanoLimboIntegration(server,
+        if (limboIntegration == null) {
+            limboIntegration = new VelocityNativeLimboIntegration(server,
                     getConfiguration().get(ConfigurationKeys.LIMBO_PORT_RANGE));
         }
         return limboIntegration;

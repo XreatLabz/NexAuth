@@ -4,10 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-package xyz.xreatlabs.nexauth.common.integration.nanolimbo;
-
-import java.net.SocketAddress;
-import java.time.Duration;
+package xyz.xreatlabs.nexauth.common.integration.nativelimbo;
 
 import ua.nanit.limbo.configuration.LimboConfig;
 import ua.nanit.limbo.server.data.BossBar;
@@ -15,17 +12,18 @@ import ua.nanit.limbo.server.data.InfoForwarding;
 import ua.nanit.limbo.server.data.PingData;
 import ua.nanit.limbo.server.data.Title;
 
-public class NanoLimboConfig implements LimboConfig {
+import java.net.SocketAddress;
+
+public class NativeLimboConfig implements LimboConfig {
+
     private final PingData pingData;
     private final SocketAddress address;
     private final InfoForwarding forwarding;
 
-    public NanoLimboConfig(SocketAddress address, InfoForwarding forwarding) {
+    public NativeLimboConfig(SocketAddress address, InfoForwarding forwarding) {
         this.pingData = new PingData();
-
-        this.pingData.setDescription("NanoLimbo");
-        this.pingData.setVersion("NanoLimbo");
-
+        this.pingData.setDescription("NexAuth Limbo");
+        this.pingData.setVersion("NexAuth");
         this.address = address;
         this.forwarding = forwarding;
     }
@@ -37,7 +35,7 @@ public class NanoLimboConfig implements LimboConfig {
 
     @Override
     public int getMaxPlayers() {
-        return -1;
+        return 100;
     }
 
     @Override
@@ -52,7 +50,12 @@ public class NanoLimboConfig implements LimboConfig {
 
     @Override
     public int getGameMode() {
-        return 2; // Adventure game mode
+        return 2;
+    }
+
+    @Override
+    public boolean isSecureProfile() {
+        return false;
     }
 
     @Override
@@ -62,12 +65,12 @@ public class NanoLimboConfig implements LimboConfig {
 
     @Override
     public long getReadTimeout() {
-        return Duration.ofSeconds(30).toMillis();
+        return 30000;
     }
 
     @Override
     public int getDebugLevel() {
-        return 0; // Display only errors
+        return 0;
     }
 
     @Override
@@ -102,12 +105,12 @@ public class NanoLimboConfig implements LimboConfig {
 
     @Override
     public String getBrandName() {
-        return null;
+        return "NexAuth";
     }
 
     @Override
     public String getJoinMessage() {
-        return null;
+        return "";
     }
 
     @Override
@@ -127,41 +130,46 @@ public class NanoLimboConfig implements LimboConfig {
 
     @Override
     public String getPlayerListHeader() {
-        return null;
+        return "";
     }
 
     @Override
     public String getPlayerListFooter() {
-        return null;
+        return "";
     }
 
     @Override
     public boolean isUseEpoll() {
-        return false;
+        return true;
     }
 
     @Override
     public int getBossGroupSize() {
-        return 1; // Default value
+        return 1;
     }
 
     @Override
     public int getWorkerGroupSize() {
-        return 4; // Default value
+        return 2;
     }
 
     @Override
-    public double getMaxPacketRate() {
-        return 1000.0; // Default packet rate limit
+    public boolean isUseTrafficLimits() {
+        return false;
+    }
+
+    @Override
+    public int getMaxPacketSize() {
+        return -1;
     }
 
     @Override
     public double getInterval() {
-        return 1000.0; // Default interval in milliseconds
+        return -1;
     }
 
     @Override
-    public boolean isSecureProfile() {
-        return false; // Disable secure profile for auth limbo
+    public double getMaxPacketRate() {
+        return -1;
     }
 }

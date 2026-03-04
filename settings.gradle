@@ -10,6 +10,3 @@ pluginManagement {
 rootProject.name = 'NexAuth'
 include 'Plugin'
 include 'API'
-include 'NexLimbo:api'
-include 'NexLimbo:bungee'
-include 'NexLimbo:velocity'

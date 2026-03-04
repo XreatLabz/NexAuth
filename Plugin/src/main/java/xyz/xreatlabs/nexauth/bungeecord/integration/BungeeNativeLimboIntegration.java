@@ -12,15 +12,15 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import ua.nanit.limbo.server.LimboServer;
 import ua.nanit.limbo.server.data.InfoForwarding;
-import xyz.xreatlabs.nexauth.common.integration.nanolimbo.NanoLimboIntegration;
+import xyz.xreatlabs.nexauth.common.integration.nativelimbo.NativeLimboIntegration;
 
-public class BungeeNanoLimboIntegration extends NanoLimboIntegration<ServerInfo> {
+public class BungeeNativeLimboIntegration extends NativeLimboIntegration<ServerInfo> {
 
     private final ClassLoader classLoader;
 
-    public BungeeNanoLimboIntegration(ClassLoader classLoader, String portRange) {
+    public BungeeNativeLimboIntegration(String portRange) {
         super(portRange);
-        this.classLoader = classLoader;
+        this.classLoader = getClass().getClassLoader();
     }
 
     @Override

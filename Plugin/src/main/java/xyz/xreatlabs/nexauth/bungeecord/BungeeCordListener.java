@@ -100,6 +100,14 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordNexAuth, Pr
         // Note to future self: NEVER EVER RUN THIS ASYNC, IT WILL BREAK PLUGINS
 
         var profile = plugin.getDatabaseProvider().getByName(event.getConnection().getName());
+
+        if (profile == null) {
+            plugin.getLogger().error("Failed to retrieve profile for user: " + event.getConnection().getName() + " - database unavailable");
+            event.setCancelled(true);
+            event.setCancelReason("Authentication service temporarily unavailable. Please try again.");
+            return;
+        }
+
         PendingConnection connection = event.getConnection();
 
         try {
@@ -137,7 +145,10 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordNexAuth, Pr
                 event.setCancelled(false);
             } else {
                 try {
-                    var server = plugin.getServerHandler().chooseLobbyServer(plugin.getDatabaseProvider().getByUUID(player.getUniqueId()), player, false, true);
+                    var user = plugin.getDatabaseProvider().getByUUID(player.getUniqueId());
+                    if (user == null) throw new NoSuchElementException();
+
+                    var server = plugin.getServerHandler().chooseLobbyServer(user, player, false, true);
 
                     if (server == null) throw new NoSuchElementException();
 

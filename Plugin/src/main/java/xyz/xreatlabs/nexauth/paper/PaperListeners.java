@@ -134,6 +134,12 @@ public class PaperListeners extends AuthenticListeners<PaperNexAuth, Player, Wor
 
         var user = plugin.getDatabaseProvider().getByName(event.getName());
 
+        if (user == null) {
+            plugin.getLogger().error("Failed to retrieve profile for user: " + event.getName() + " - database unavailable");
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("Authentication service temporarily unavailable. Please try again."));
+            return;
+        }
+
         var newProfile = Bukkit.createProfileExact(user.getUuid(), event.getName());
 
         event.setPlayerProfile(newProfile);

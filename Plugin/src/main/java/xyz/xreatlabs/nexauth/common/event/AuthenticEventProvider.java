@@ -12,10 +12,10 @@ import xyz.xreatlabs.nexauth.api.event.EventType;
 import xyz.xreatlabs.nexauth.common.AuthenticHandler;
 import xyz.xreatlabs.nexauth.common.AuthenticNexAuth;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 
 public class AuthenticEventProvider<P, S> extends AuthenticHandler<P, S> implements EventProvider<P, S> {
@@ -29,7 +29,7 @@ public class AuthenticEventProvider<P, S> extends AuthenticHandler<P, S> impleme
 
     @Override
     public <E extends Event<P, S>> Consumer<E> subscribe(EventType<P, S, E> type, Consumer<E> handler) {
-        listeners.computeIfAbsent(type, x -> new HashSet<>()).add((Consumer<Event<P, S>>) handler);
+        listeners.computeIfAbsent(type, x -> new CopyOnWriteArraySet<>()).add((Consumer<Event<P, S>>) handler);
         return handler;
     }
 
@@ -45,7 +45,12 @@ public class AuthenticEventProvider<P, S> extends AuthenticHandler<P, S> impleme
         if (set == null || set.isEmpty()) return;
 
         for (Consumer<Event<P, S>> consumer : set) {
-            consumer.accept(event);
+            try {
+                consumer.accept(event);
+            } catch (Throwable t) {
+                var name = type == null ? "unknown" : type.getClazz().getSimpleName();
+                plugin.getLogger().error("Unhandled exception in event listener for " + name, t);
+            }
         }
     }
 
@@ -55,7 +60,12 @@ public class AuthenticEventProvider<P, S> extends AuthenticHandler<P, S> impleme
         if (set == null || set.isEmpty()) return;
 
         for (Consumer<Event<P, S>> consumer : set) {
-            consumer.accept((Event<P, S>) event);
+            try {
+                consumer.accept((Event<P, S>) event);
+            } catch (Throwable t) {
+                var name = type == null ? "unknown" : type.getClazz().getSimpleName();
+                plugin.getLogger().error("Unhandled exception in unsafe event listener for " + name, t);
+            }
         }
     }
 }

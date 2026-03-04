@@ -25,18 +25,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class AuthenticPremiumProvider implements PremiumProvider {
 
     private final Cache<String, PremiumUser> userCache;
     private final List<ThrowableFunction<String, PremiumUser, PremiumException>> fetchers;
     private final AuthenticNexAuth<?, ?> plugin;
+    private final AtomicLong circuitOpenUntil;
 
     public AuthenticPremiumProvider(AuthenticNexAuth<?, ?> plugin) {
         this.plugin = plugin;
         userCache = Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build();
+
+        circuitOpenUntil = new AtomicLong(0);
 
         fetchers = new ArrayList<>(3);
 
@@ -50,6 +54,10 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     public PremiumUser getUserForName(String name) throws PremiumException {
         name = name.toLowerCase();
 
+        if (isCircuitOpen()) {
+            throw new PremiumException(PremiumException.Issue.THROTTLED, "Premium provider circuit breaker is open");
+        }
+
         var exceptionToThrow = new PremiumException[1];
 
         String finalName = name;
@@ -60,6 +68,10 @@ public class AuthenticPremiumProvider implements PremiumProvider {
                 try {
                     return fetcher.apply(x);
                 } catch (PremiumException e) {
+                    if (e.getIssue() == PremiumException.Issue.SERVER_EXCEPTION || e.getIssue() == PremiumException.Issue.THROTTLED) {
+                        openCircuit();
+                    }
+
                     if (i == fetchers.size() - 1) {
                         exceptionToThrow[0] = e;
                     } else if (e.getIssue() == PremiumException.Issue.SERVER_EXCEPTION) {
@@ -83,7 +95,23 @@ public class AuthenticPremiumProvider implements PremiumProvider {
             throw exceptionToThrow[0];
         }
 
+        if (result != null) {
+            closeCircuit();
+        }
+
         return result;
+    }
+
+    private boolean isCircuitOpen() {
+        return circuitOpenUntil.get() > System.currentTimeMillis();
+    }
+
+    private void openCircuit() {
+        circuitOpenUntil.set(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30));
+    }
+
+    private void closeCircuit() {
+        circuitOpenUntil.set(0);
     }
 
     private PremiumUser getUserFromAshcon(String name) throws PremiumException {

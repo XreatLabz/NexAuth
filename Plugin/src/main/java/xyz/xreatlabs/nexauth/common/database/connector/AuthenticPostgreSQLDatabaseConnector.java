@@ -12,6 +12,7 @@ import xyz.xreatlabs.nexauth.api.database.connector.PostgreSQLDatabaseConnector;
 import xyz.xreatlabs.nexauth.api.util.ThrowableFunction;
 import xyz.xreatlabs.nexauth.common.AuthenticNexAuth;
 import xyz.xreatlabs.nexauth.common.config.ConfigurateHelper;
+import xyz.xreatlabs.nexauth.common.config.ConfigurationKeys;
 import xyz.xreatlabs.nexauth.common.config.key.ConfigurationKey;
 
 import java.sql.Connection;
@@ -68,10 +69,33 @@ public class AuthenticPostgreSQLDatabaseConnector extends AuthenticDatabaseConne
                 return function.apply(connection);
             }
         } catch (SQLTransientConnectionException e) {
-            plugin.getLogger().error("!! LOST CONNECTION TO THE DATABASE, THE PROXY IS GOING TO SHUT DOWN TO PREVENT DAMAGE !!");
-            e.printStackTrace();
-            System.exit(1);
-            //Won't return anyway
+            var retries = Math.max(0, plugin.getConfiguration().get(ConfigurationKeys.DATABASE_TRANSIENT_RETRIES));
+            var delay = Math.max(0, plugin.getConfiguration().get(ConfigurationKeys.DATABASE_TRANSIENT_RETRY_DELAY_MS));
+
+            for (int attempt = 0; attempt < retries; attempt++) {
+                try {
+                    if (delay > 0) {
+                        Thread.sleep(delay);
+                    }
+
+                    try (var connection = obtainInterface()) {
+                        return function.apply(connection);
+                    }
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (SQLTransientConnectionException ignored) {
+                } catch (SQLException sqlException) {
+                    throw new RuntimeException(sqlException);
+                }
+            }
+
+            plugin.handleFailurePolicy(
+                    "!! LOST CONNECTION TO THE DATABASE, FAILURE POLICY TRIGGERED !!",
+                    e,
+                    1,
+                    () -> plugin.getLogger().error("Database operations are unavailable due to transient connection failures")
+            );
             return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);

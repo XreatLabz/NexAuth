@@ -28,6 +28,7 @@ public class PremiumEnableCommand<P> extends PremiumCommand<P> {
     @CommandCompletion("%autocomplete.premium")
     public CompletionStage<Void> onPremium(Audience sender, UUID uuid, P player, @Single String password) {
         return runAsync(() -> {
+            plugin.getLoginTryListener().ensureCanAttempt(player);
             var user = getUser(player);
             checkCracked(user);
 

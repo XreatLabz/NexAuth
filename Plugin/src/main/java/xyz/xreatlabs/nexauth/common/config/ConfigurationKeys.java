@@ -411,4 +411,102 @@ public class ConfigurationKeys {
             "!!THIS OPTION IS IRRELEVANT WHEN USING PAPER!! Defines port(s) that limbo server can be bounded to.",
             ConfigurateHelper::getString
     );
+
+    public static final ConfigurationKey<String> FAILURE_POLICY_MODE = new ConfigurationKey<>(
+            "failure-policy.mode",
+            "HARD_FAIL",
+            "Failure policy mode. Available: HARD_FAIL, RETRY_THEN_DISABLE, DEGRADE.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<Boolean> STRICT_MAIN_THREAD_IO_CHECK = new ConfigurationKey<>(
+            "strict-main-thread-io-check",
+            false,
+            "When enabled, NexAuth throws an exception whenever an IO operation is reported on the main thread.",
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> DATABASE_TRANSIENT_RETRIES = new ConfigurationKey<>(
+            "database.transient-retries",
+            0,
+            "How many times to retry transient database connection failures before applying failure policy.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Integer> DATABASE_TRANSIENT_RETRY_DELAY_MS = new ConfigurationKey<>(
+            "database.transient-retry-delay-ms",
+            250,
+            "Delay in milliseconds between transient database retries.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Boolean> SECURITY_LOGIN_BACKOFF_ENABLED = new ConfigurationKey<>(
+            "security.login.backoff.enabled",
+            false,
+            "Whether to apply exponential login backoff after wrong password attempts.",
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_LOGIN_BACKOFF_INITIAL_MS = new ConfigurationKey<>(
+            "security.login.backoff.initial-ms",
+            1000,
+            "Initial login backoff in milliseconds.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_LOGIN_BACKOFF_MAX_MS = new ConfigurationKey<>(
+            "security.login.backoff.max-ms",
+            30000,
+            "Maximum login backoff in milliseconds.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_LOGIN_BACKOFF_MULTIPLIER = new ConfigurationKey<>(
+            "security.login.backoff.multiplier",
+            2,
+            "Multiplier used by login backoff.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Boolean> SECURITY_LOGIN_LOCKOUT_ENABLED = new ConfigurationKey<>(
+            "security.login.lockout.enabled",
+            false,
+            "Whether to lock login attempts after repeated failures.",
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_LOGIN_LOCKOUT_THRESHOLD = new ConfigurationKey<>(
+            "security.login.lockout.threshold",
+            10,
+            "Wrong login attempts threshold before lockout is applied.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_LOGIN_LOCKOUT_DURATION_MS = new ConfigurationKey<>(
+            "security.login.lockout.duration-ms",
+            300000,
+            "Lockout duration in milliseconds after reaching threshold.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Boolean> SECURITY_TOTP_ATTEMPT_LIMIT_ENABLED = new ConfigurationKey<>(
+            "security.totp.attempt-limit-enabled",
+            false,
+            "Whether to limit TOTP setup confirmation attempts.",
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_TOTP_MAX_ATTEMPTS = new ConfigurationKey<>(
+            "security.totp.max-attempts",
+            5,
+            "Maximum invalid TOTP setup attempts allowed in a window.",
+            ConfigurateHelper::getInt
+    );
+
+    public static final ConfigurationKey<Integer> SECURITY_TOTP_ATTEMPT_WINDOW_MS = new ConfigurationKey<>(
+            "security.totp.attempt-window-ms",
+            300000,
+            "Window for TOTP setup attempt counting in milliseconds.",
+            ConfigurateHelper::getInt
+    );
 }

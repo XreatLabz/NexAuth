@@ -28,6 +28,7 @@ public class ChangePasswordCommand<P> extends Command<P> {
     @CommandCompletion("%autocomplete.change-password")
     public CompletionStage<Void> onPasswordChange(Audience sender, P player, String oldPass, @Single String newPass) {
         return runAsync(() -> {
+            plugin.getLoginTryListener().ensureCanAttempt(player);
             var user = getUser(player);
 
             if (!user.isRegistered()) {

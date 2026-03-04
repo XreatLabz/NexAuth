@@ -63,7 +63,10 @@ import xyz.xreatlabs.nexauth.common.log.Log4JFilter;
 import xyz.xreatlabs.nexauth.common.log.SimpleLogFilter;
 import xyz.xreatlabs.nexauth.common.mail.AuthenticEMailHandler;
 import xyz.xreatlabs.nexauth.common.migrate.*;
+import xyz.xreatlabs.nexauth.common.observability.AuthMetrics;
 import xyz.xreatlabs.nexauth.common.premium.AuthenticPremiumProvider;
+import xyz.xreatlabs.nexauth.common.reliability.FailurePolicyHandler;
+import xyz.xreatlabs.nexauth.common.reliability.FailurePolicyMode;
 import xyz.xreatlabs.nexauth.common.server.AuthenticServerHandler;
 import xyz.xreatlabs.nexauth.common.totp.AuthenticTOTPProvider;
 import xyz.xreatlabs.nexauth.common.util.CancellableTask;
@@ -115,6 +118,7 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
     private DatabaseConnector<?, ?> databaseConnector;
     private AuthenticEMailHandler eMailHandler;
     private LoginTryListener<P, S> loginTryListener;
+    private final AuthMetrics authMetrics;
 
     protected AuthenticNexAuth() {
         cryptoProviders = new ConcurrentHashMap<>();
@@ -123,6 +127,7 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
         platformHandle = providePlatformHandle();
         forbiddenPasswords = new HashSet<>();
         cancelOnExit = HashMultimap.create();
+        authMetrics = new AuthMetrics();
     }
 
     public Map<Class<?>, DatabaseConnectorRegistration<?, ?>> getDatabaseConnectors() {
@@ -263,6 +268,9 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
         eventProvider = new AuthenticEventProvider<>(this);
         premiumProvider = new AuthenticPremiumProvider(this);
+
+        eventProvider.subscribe(eventProvider.getTypes().wrongPassword, event -> authMetrics.recordWrongPassword(event.getSource()));
+        eventProvider.subscribe(eventProvider.getTypes().authenticated, event -> authMetrics.recordAuthenticated(event.getReason()));
 
         registerCryptoProvider(new MessageDigestCryptoProvider("SHA-256"));
         registerCryptoProvider(new MessageDigestCryptoProvider("SHA-512"));
@@ -963,6 +971,31 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
         return floodgateApi != null && uuid != null && floodgateApi.isFloodgateId(uuid);
     }
 
+    public AuthMetrics getAuthMetrics() {
+        return authMetrics;
+    }
+
+    public FailurePolicyMode getFailurePolicyMode() {
+        if (configuration == null) {
+            return FailurePolicyMode.HARD_FAIL;
+        }
+        return FailurePolicyMode.parse(configuration.get(FAILURE_POLICY_MODE));
+    }
+
+    public FailurePolicyHandler createFailurePolicyHandler(int hardFailCode, Runnable degradeAction) {
+        return new FailurePolicyHandler(
+                logger,
+                () -> shutdownProxy(hardFailCode),
+                degradeAction == null ? () -> {
+                } : degradeAction
+        );
+    }
+
+    public void handleFailurePolicy(String message, Throwable throwable, int hardFailCode, Runnable degradeAction) {
+        createFailurePolicyHandler(hardFailCode, degradeAction)
+                .handle(getFailurePolicyMode(), message, throwable);
+    }
+
     protected void shutdownProxy(int code) {
         //noinspection finally
         try {
@@ -981,8 +1014,12 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
     public void reportMainThread() {
         if (mainThread()) {
-            logger.error("AN IO OPERATION IS BEING PERFORMED ON THE MAIN THREAD! THIS IS A SERIOUS BUG!, PLEASE REPORT IT TO THE DEVELOPER OF THE PLUGIN AND ATTACH THE STACKTRACE BELOW!");
-            new Throwable().printStackTrace();
+            var throwable = new Throwable();
+            logger.error("AN IO OPERATION IS BEING PERFORMED ON THE MAIN THREAD! THIS IS A SERIOUS BUG!, PLEASE REPORT IT TO THE DEVELOPER OF THE PLUGIN AND ATTACH THE STACKTRACE BELOW!", throwable);
+
+            if (configuration != null && configuration.get(STRICT_MAIN_THREAD_IO_CHECK)) {
+                throw new IllegalStateException("Main-thread IO operation detected", throwable);
+            }
         }
     }
 

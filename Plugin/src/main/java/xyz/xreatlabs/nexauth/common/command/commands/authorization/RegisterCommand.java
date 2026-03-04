@@ -26,6 +26,7 @@ public class RegisterCommand<P> extends AuthorizationCommand<P> {
     public CompletionStage<Void> onRegister(Audience sender, P player, @Single String password, String passwordRepeat) {
         return runAsync(() -> {
             checkUnauthorized(player);
+            plugin.getLoginTryListener().ensureCanAttempt(player);
             var user = getUser(player);
 
             if (user.isRegistered()) throw new InvalidCommandArgument(getMessage("error-already-registered"));

@@ -217,8 +217,12 @@ dependencies {
     implementation("xyz.kyngs.libby:libby-bungee:1.7.1")
     implementation("xyz.kyngs.libby:libby-paper:1.7.1")
 
-    //NexLimbo (local)
-    compileOnly(project(":NexLimbo:api"))
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.withType<ProcessResources> {

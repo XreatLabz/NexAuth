@@ -45,6 +45,9 @@ public class TwoFactorConfirmCommand<P> extends Command<P> {
             }
 
             if (!auth.confirmTwoFactorAuth(player, parsedCode, user)) {
+                if (auth.hasExceededTotpAttempts(player)) {
+                    throw new InvalidCommandArgument(getMessage("error-throttle"));
+                }
                 throw new InvalidCommandArgument(getMessage("totp-wrong"));
             }
 

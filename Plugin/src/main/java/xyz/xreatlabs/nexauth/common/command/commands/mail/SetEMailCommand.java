@@ -35,6 +35,7 @@ public class SetEMailCommand<P> extends EMailCommand<P> {
     @CommandCompletion("%autocomplete.set-email")
     public CompletionStage<Void> onSetMail(Audience sender, P player, UUID uuid, String mail, @Single String password) {
         return runAsync(() -> {
+            plugin.getLoginTryListener().ensureCanAttempt(player);
             var user = getUser(player);
 
             var hashed = user.getHashedPassword();

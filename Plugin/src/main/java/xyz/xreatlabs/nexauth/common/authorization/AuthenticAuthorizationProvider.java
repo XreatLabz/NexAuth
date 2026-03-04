@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S> implements AuthorizationProvider<P> {
 
@@ -35,6 +36,7 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     private final Map<P, String> awaiting2FA;
     private final Cache<UUID, EmailVerifyData> emailConfirmCache;
     private final Cache<UUID, String> passwordResetCache;
+    private final Cache<UUID, AtomicInteger> totpAttemptCache;
 
     public AuthenticAuthorizationProvider(AuthenticNexAuth<P, S> plugin) {
         super(plugin);
@@ -56,6 +58,10 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         passwordResetCache = Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build();
+
+        totpAttemptCache = Caffeine.newBuilder()
+                .expireAfterWrite(Math.max(1, plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_ATTEMPT_WINDOW_MS)), TimeUnit.MILLISECONDS)
+                .build();
     }
 
     public Cache<UUID, EmailVerifyData> getEmailConfirmCache() {
@@ -69,8 +75,10 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     public void onExit(P player) {
         stopTracking(player);
         awaiting2FA.remove(player);
-        emailConfirmCache.invalidate(platformHandle.getUUIDForPlayer(player));
-        passwordResetCache.invalidate(platformHandle.getUUIDForPlayer(player));
+        var uuid = platformHandle.getUUIDForPlayer(player);
+        emailConfirmCache.invalidate(uuid);
+        passwordResetCache.invalidate(uuid);
+        totpAttemptCache.invalidate(uuid);
     }
 
     @Override
@@ -105,12 +113,28 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     @Override
     public boolean confirmTwoFactorAuth(P player, Integer code, User user) {
         var secret = awaiting2FA.get(player);
-        if (plugin.getTOTPProvider().verify(code, secret)) {
-            user.setSecret(secret);
-            plugin.getDatabaseProvider().updateUser(user);
-            return true;
+        var uuid = platformHandle.getUUIDForPlayer(player);
+
+        if (plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_ATTEMPT_LIMIT_ENABLED)) {
+            var maxAttempts = Math.max(1, plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_MAX_ATTEMPTS));
+            var attempts = totpAttemptCache.get(uuid, ignored -> new AtomicInteger(0));
+
+            if (attempts.get() >= maxAttempts) {
+                return false;
+            }
+
+            if (!plugin.getTOTPProvider().verify(code, secret)) {
+                attempts.incrementAndGet();
+                return false;
+            }
+        } else if (!plugin.getTOTPProvider().verify(code, secret)) {
+            return false;
         }
-        return false;
+
+        user.setSecret(secret);
+        plugin.getDatabaseProvider().updateUser(user);
+        totpAttemptCache.invalidate(uuid);
+        return true;
     }
 
     public void startTracking(User user, P player) {
@@ -196,6 +220,21 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         });
 
         wrong.forEach(unAuthorized::remove);
+    }
+
+    public boolean hasExceededTotpAttempts(P player) {
+        if (!plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_ATTEMPT_LIMIT_ENABLED)) {
+            return false;
+        }
+
+        var uuid = platformHandle.getUUIDForPlayer(player);
+        var attempts = totpAttemptCache.getIfPresent(uuid);
+        if (attempts == null) {
+            return false;
+        }
+
+        var maxAttempts = Math.max(1, plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_MAX_ATTEMPTS));
+        return attempts.get() >= maxAttempts;
     }
 
     public record EmailVerifyData(String email, String token, UUID uuid) {

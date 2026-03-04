@@ -29,6 +29,7 @@ public class LoginCommand<P> extends AuthorizationCommand<P> {
     public CompletionStage<Void> onLogin(Audience sender, P player, @Single String password, @Optional String code) {
         return runAsync(() -> {
             checkUnauthorized(player);
+            plugin.getLoginTryListener().ensureCanAttempt(player);
             var user = getUser(player);
             if (!user.isRegistered()) throw new InvalidCommandArgument(getMessage("error-not-registered"));
 

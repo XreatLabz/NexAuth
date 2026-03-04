@@ -142,6 +142,11 @@ public class NexAuthCommand<P> extends StaffCommand<P> {
 
             dump.add("server", server);
 
+            var nexauth = new JsonObject();
+            nexauth.addProperty("failurePolicyMode", plugin.getFailurePolicyMode().name());
+            nexauth.add("authMetrics", plugin.getAuthMetrics().toJson());
+            dump.add("nexauth", nexauth);
+
             try (var writer = new FileWriter(dumpFile)) {
                 writer.write(GSON.toJson(dump));
             } catch (IOException e) {

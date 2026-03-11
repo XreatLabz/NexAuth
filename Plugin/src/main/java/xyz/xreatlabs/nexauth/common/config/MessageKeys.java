@@ -565,6 +565,55 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
+    public static final ConfigurationKey<String> INFO_STATUS_HEADER = new ConfigurationKey<>(
+            "info-status-header",
+            "NexAuth status for %platform% (%version%)",
+            "This message is displayed as the header for /nexauth status.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_STATUS_ENTRY = new ConfigurationKey<>(
+            "info-status-entry",
+            "%label%: %value%",
+            "This message is displayed for each status line in /nexauth status.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_STATUS_METRICS = new ConfigurationKey<>(
+            "info-status-metrics",
+            "Auth metrics: %json%",
+            "This message is displayed for metrics output in /nexauth status.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_DOCTOR_HEADER = new ConfigurationKey<>(
+            "info-doctor-header",
+            "NexAuth doctor summary: %severity%",
+            "This message is displayed as the header for /nexauth doctor.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_DOCTOR_ENTRY = new ConfigurationKey<>(
+            "info-doctor-entry",
+            "[%status%] %check%: %message%",
+            "This message is displayed for each doctor result line.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_DOCTOR_DETAIL = new ConfigurationKey<>(
+            "info-doctor-detail",
+            "  %detail%",
+            "This message is displayed for optional doctor detail lines.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> INFO_DOCTOR_SUMMARY = new ConfigurationKey<>(
+            "info-doctor-summary",
+            "Summary -> OK: %ok%, WARN: %warn%, FAIL: %fail%",
+            "This message is displayed as the summary line for /nexauth doctor.",
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<String> INFO_DELETING = new ConfigurationKey<>(
             "info-deleting",
             "Deleting...",
@@ -985,6 +1034,20 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
+    public static final ConfigurationKey<String> SYNTAX_STATUS = new ConfigurationKey<>(
+            "syntax.status",
+            "",
+            "This message is displayed when the player attempts to use /nexauth status with wrong syntax.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> SYNTAX_DOCTOR = new ConfigurationKey<>(
+            "syntax.doctor",
+            "",
+            "This message is displayed when the player attempts to use /nexauth doctor with wrong syntax.",
+            ConfigurateHelper::getString
+    );
+
     public static final ConfigurationKey<String> SYNTAX_SET_EMAIL = new ConfigurationKey<>(
             "syntax.set-email",
             "<address> <password>",
@@ -1155,6 +1218,20 @@ public class MessageKeys {
             "autocomplete.email-test",
             "address",
             "This hint is displayed when the player starts typing the /nexauth email test command.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> AUTOCOMPLETE_STATUS = new ConfigurationKey<>(
+            "autocomplete.status",
+            "",
+            "This hint is displayed when the player starts typing the /nexauth status command.",
+            ConfigurateHelper::getString
+    );
+
+    public static final ConfigurationKey<String> AUTOCOMPLETE_DOCTOR = new ConfigurationKey<>(
+            "autocomplete.doctor",
+            "",
+            "This hint is displayed when the player starts typing the /nexauth doctor command.",
             ConfigurateHelper::getString
     );
 

@@ -16,6 +16,12 @@ import xyz.xreatlabs.nexauth.api.event.events.AuthenticatedEvent;
 import xyz.xreatlabs.nexauth.common.AuthenticNexAuth;
 import xyz.xreatlabs.nexauth.common.command.InvalidCommandArgument;
 import xyz.xreatlabs.nexauth.common.database.AuthenticUser;
+import xyz.xreatlabs.nexauth.common.doctor.DoctorJsonExporter;
+import xyz.xreatlabs.nexauth.common.doctor.DoctorRenderer;
+import xyz.xreatlabs.nexauth.common.doctor.DoctorService;
+import xyz.xreatlabs.nexauth.common.doctor.RenderedLine;
+import xyz.xreatlabs.nexauth.common.doctor.StatusRenderer;
+import xyz.xreatlabs.nexauth.common.doctor.StatusSnapshotProvider;
 import xyz.xreatlabs.nexauth.common.event.events.AuthenticPasswordChangeEvent;
 import xyz.xreatlabs.nexauth.common.event.events.AuthenticPremiumLoginSwitchEvent;
 import xyz.xreatlabs.nexauth.common.util.GeneralUtil;
@@ -60,6 +66,22 @@ public class NexAuthCommand<P> extends StaffCommand<P> {
             plugin.getEmailHandler().sendTestMail(email);
             audience.sendMessage(getMessage("info-sent-email"));
         });
+    }
+
+    @Subcommand("status")
+    @CommandPermission("nexauth.status")
+    @Syntax("{@@syntax.status}")
+    @CommandCompletion("%autocomplete.status")
+    public CompletionStage<Void> onStatus(Audience audience) {
+        return runAsync(() -> sendLines(audience, StatusRenderer.render(StatusSnapshotProvider.from(plugin))));
+    }
+
+    @Subcommand("doctor")
+    @CommandPermission("nexauth.doctor")
+    @Syntax("{@@syntax.doctor}")
+    @CommandCompletion("%autocomplete.doctor")
+    public CompletionStage<Void> onDoctor(Audience audience) {
+        return runAsync(() -> sendLines(audience, DoctorRenderer.render(DoctorService.forPlugin(plugin).run())));
     }
 
     @Subcommand("dump")
@@ -145,6 +167,10 @@ public class NexAuthCommand<P> extends StaffCommand<P> {
             var nexauth = new JsonObject();
             nexauth.addProperty("failurePolicyMode", plugin.getFailurePolicyMode().name());
             nexauth.add("authMetrics", plugin.getAuthMetrics().toJson());
+            var statusSnapshot = StatusSnapshotProvider.from(plugin);
+            var doctorReport = DoctorService.forPlugin(plugin).run();
+            nexauth.add("status", DoctorJsonExporter.exportStatus(statusSnapshot));
+            nexauth.add("doctor", DoctorJsonExporter.exportDoctor(doctorReport));
             dump.add("nexauth", nexauth);
 
             try (var writer = new FileWriter(dumpFile)) {
@@ -515,6 +541,12 @@ public class NexAuthCommand<P> extends StaffCommand<P> {
                 ));
             }
         });
+    }
+
+    private void sendLines(Audience audience, java.util.List<RenderedLine> lines) {
+        for (RenderedLine line : lines) {
+            audience.sendMessage(getMessage(line.messageKey(), line.replacements().toArray(String[]::new)));
+        }
     }
 
 }

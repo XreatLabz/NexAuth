@@ -204,6 +204,10 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
         return databaseProvider;
     }
 
+    public DatabaseConnector<?, ?> getRuntimeDatabaseConnector() {
+        return databaseConnector;
+    }
+
     @Override
     public AuthenticPremiumProvider getPremiumProvider() {
         return premiumProvider;

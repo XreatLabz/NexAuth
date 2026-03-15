@@ -72,7 +72,12 @@ public class Command<P> extends BaseCommand {
 
         if (plugin.fromFloodgate(uuid)) throw new InvalidCommandArgument(getMessage("error-from-floodgate"));
 
-        return plugin.getDatabaseProvider().getByUUID(uuid);
+        var user = plugin.getUserForPlayer(player);
+        if (user == null) {
+            throw new InvalidCommandArgument(getMessage("error-not-registered"));
+        }
+
+        return user;
     }
 
     protected void setPassword(Audience sender, User user, String password, String messageKey) {

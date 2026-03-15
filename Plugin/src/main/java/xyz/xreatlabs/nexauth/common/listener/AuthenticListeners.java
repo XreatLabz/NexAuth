@@ -49,8 +49,14 @@ public class AuthenticListeners<Plugin extends AuthenticNexAuth<P, S>, P, S> {
         if (plugin.fromFloodgate(uuid)) return;
 
         if (user == null) {
-            user = plugin.getDatabaseProvider().getByUUID(uuid);
+            user = plugin.getUserForPlayer(player);
         }
+
+        if (user == null) {
+            plugin.getLogger().error("Failed to load authentication data for player " + platformHandle.getUsernameForPlayer(player) + " after login; skipping NexAuth tracking for this session.");
+            return;
+        }
+
         var sessionTime = Duration.ofSeconds(plugin.getConfiguration().get(ConfigurationKeys.SESSION_TIMEOUT));
 
         if (user.autoLoginEnabled()) {
@@ -295,14 +301,23 @@ public class AuthenticListeners<Plugin extends AuthenticNexAuth<P, S>, P, S> {
         if (fromFloodgate) {
             user = null;
         } else if (user == null) {
-            user = plugin.getDatabaseProvider().getByUUID(id);
+            user = plugin.getUserForPlayer(player);
         }
 
         if (ip == null) {
             ip = platformHandle.getIP(player);
         }
 
-        if (fromFloodgate || user.autoLoginEnabled() || (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now()))) {
+        if (fromFloodgate) {
+            return new BiHolder<>(true, plugin.getServerHandler().chooseLobbyServer(null, player, true, false));
+        }
+
+        if (user == null) {
+            plugin.getLogger().error("Failed to load authentication data for player " + platformHandle.getUsernameForPlayer(player) + " during server selection; falling back to lobby routing.");
+            return new BiHolder<>(true, plugin.getServerHandler().chooseLobbyServer(null, player, true, false));
+        }
+
+        if (user.autoLoginEnabled() || (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now()))) {
             return new BiHolder<>(true, plugin.getServerHandler().chooseLobbyServer(user, player, true, false));
         } else {
             return new BiHolder<>(false, plugin.getServerHandler().chooseLimboServer(user, player));

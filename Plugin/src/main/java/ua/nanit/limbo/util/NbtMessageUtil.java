@@ -1,3 +1,9 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 package ua.nanit.limbo.util;
 
 import java.util.ArrayList;
@@ -27,21 +33,7 @@ public class NbtMessageUtil {
         if (json instanceof JsonPrimitive) {
             JsonPrimitive jsonPrimitive = (JsonPrimitive) json;
             if (jsonPrimitive.isNumber()) {
-                Number number = json.getAsNumber();
-
-                if (number instanceof Byte) {
-                    return ByteBinaryTag.byteBinaryTag((Byte) number);
-                } else if (number instanceof Short) {
-                    return ShortBinaryTag.shortBinaryTag((Short) number);
-                } else if (number instanceof Integer) {
-                    return IntBinaryTag.intBinaryTag((Integer) number);
-                } else if (number instanceof Long) {
-                    return LongBinaryTag.longBinaryTag((Long) number);
-                } else if (number instanceof Float) {
-                    return FloatBinaryTag.floatBinaryTag((Float) number);
-                } else if (number instanceof Double) {
-                    return DoubleBinaryTag.doubleBinaryTag((Double) number);
-                }
+                return fromNumber(jsonPrimitive);
             } else if (jsonPrimitive.isString()) {
                 return StringBinaryTag.stringBinaryTag(jsonPrimitive.getAsString());
             } else if (jsonPrimitive.isBoolean()) {
@@ -72,21 +64,21 @@ public class NbtMessageUtil {
             if (listType.equals(tagByteType)) {
                 byte[] bytes = new byte[jsonArray.size()];
                 for (int i = 0; i < bytes.length; i++) {
-                    bytes[i] = (Byte) jsonArray.get(i).getAsNumber();
+                    bytes[i] = jsonArray.get(i).getAsNumber().byteValue();
                 }
 
                 listTag = ByteArrayBinaryTag.byteArrayBinaryTag(bytes);
             } else if (listType.equals(tagIntType)) {
                 int[] ints = new int[jsonArray.size()];
                 for (int i = 0; i < ints.length; i++) {
-                    ints[i] = (Integer) jsonArray.get(i).getAsNumber();
+                    ints[i] = jsonArray.get(i).getAsNumber().intValue();
                 }
 
                 listTag = IntArrayBinaryTag.intArrayBinaryTag(ints);
             } else if (listType.equals(tagLongType)) {
                 long[] longs = new long[jsonArray.size()];
                 for (int i = 0; i < longs.length; i++) {
-                    longs[i] = (Long) jsonArray.get(i).getAsNumber();
+                    longs[i] = jsonArray.get(i).getAsNumber().longValue();
                 }
 
                 listTag = LongArrayBinaryTag.longArrayBinaryTag(longs);
@@ -111,6 +103,26 @@ public class NbtMessageUtil {
         }
 
         throw new IllegalArgumentException("Unknown JSON element: " + json);
+    }
+
+    private static BinaryTag fromNumber(JsonPrimitive jsonPrimitive) {
+        String value = jsonPrimitive.getAsString();
+
+        if (value.contains(".") || value.contains("e") || value.contains("E")) {
+            return DoubleBinaryTag.doubleBinaryTag(jsonPrimitive.getAsDouble());
+        }
+
+        long longValue = jsonPrimitive.getAsLong();
+        if (longValue >= Byte.MIN_VALUE && longValue <= Byte.MAX_VALUE) {
+            return ByteBinaryTag.byteBinaryTag((byte) longValue);
+        }
+        if (longValue >= Short.MIN_VALUE && longValue <= Short.MAX_VALUE) {
+            return ShortBinaryTag.shortBinaryTag((short) longValue);
+        }
+        if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
+            return IntBinaryTag.intBinaryTag((int) longValue);
+        }
+        return LongBinaryTag.longBinaryTag(longValue);
     }
 
 }

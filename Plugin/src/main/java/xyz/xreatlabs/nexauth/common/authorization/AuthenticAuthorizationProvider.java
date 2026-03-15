@@ -114,6 +114,11 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     public boolean confirmTwoFactorAuth(P player, Integer code, User user) {
         var secret = awaiting2FA.get(player);
         var uuid = platformHandle.getUUIDForPlayer(player);
+        var totpProvider = plugin.getTOTPProvider();
+
+        if (secret == null || totpProvider == null) {
+            return false;
+        }
 
         if (plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_ATTEMPT_LIMIT_ENABLED)) {
             var maxAttempts = Math.max(1, plugin.getConfiguration().get(ConfigurationKeys.SECURITY_TOTP_MAX_ATTEMPTS));
@@ -123,11 +128,11 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                 return false;
             }
 
-            if (!plugin.getTOTPProvider().verify(code, secret)) {
+            if (!totpProvider.verify(code, secret)) {
                 attempts.incrementAndGet();
                 return false;
             }
-        } else if (!plugin.getTOTPProvider().verify(code, secret)) {
+        } else if (!totpProvider.verify(code, secret)) {
             return false;
         }
 

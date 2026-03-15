@@ -24,10 +24,23 @@ public record SemanticVersion(int major, int minor, int patch, boolean dev) {
      * @return The parsed semantic version.
      */
     public static SemanticVersion parse(String version) {
-        boolean isDev = version.endsWith("-SNAPSHOT") || version.contains("-beta") || version.contains("-alpha") || version.contains("-rc");
-        String cleanVersion = version.replaceAll("-.*$", "");
-        String[] split = cleanVersion.split("\\.");
-        return new SemanticVersion(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]), isDev);
+        if (version == null || version.isBlank()) {
+            return null;
+        }
+
+        try {
+            boolean isDev = version.endsWith("-SNAPSHOT") || version.contains("-beta") || version.contains("-alpha") || version.contains("-rc");
+            String cleanVersion = version.replaceAll("-.*$", "");
+            String[] split = cleanVersion.split("\\.");
+
+            if (split.length < 3) {
+                return null;
+            }
+
+            return new SemanticVersion(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2]), isDev);
+        } catch (RuntimeException ignored) {
+            return null;
+        }
     }
 
     /**
@@ -37,6 +50,9 @@ public record SemanticVersion(int major, int minor, int patch, boolean dev) {
      * @return -1 if this version is less than the specified version, 0 if they are equal, and 1 if this version is greater
      */
     public int compare(SemanticVersion other) {
+        if (other == null) {
+            return 1;
+        }
         if (major != other.major) {
             return major < other.major ? -1 : 1;
         }

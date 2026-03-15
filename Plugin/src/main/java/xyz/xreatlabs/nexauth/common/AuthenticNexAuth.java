@@ -69,6 +69,7 @@ import xyz.xreatlabs.nexauth.common.reliability.FailurePolicyHandler;
 import xyz.xreatlabs.nexauth.common.reliability.FailurePolicyMode;
 import xyz.xreatlabs.nexauth.common.server.AuthenticServerHandler;
 import xyz.xreatlabs.nexauth.common.totp.AuthenticTOTPProvider;
+import xyz.xreatlabs.nexauth.common.util.AuthRuntimeGuards;
 import xyz.xreatlabs.nexauth.common.util.CancellableTask;
 import xyz.xreatlabs.nexauth.common.util.GeneralUtil;
 
@@ -229,8 +230,12 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
     }
 
     protected void enable() {
-        version = SemanticVersion.parse(getVersion());
         if (logger == null) logger = provideLogger();
+        version = SemanticVersion.parse(getVersion());
+        if (version == null) {
+            logger.warn("Unable to parse plugin version '%s', disabling update version comparisons for this session".formatted(getVersion()));
+            version = new SemanticVersion(0, 0, 0, true);
+        }
 
         try {
             new Log4JFilter().inject();
@@ -318,6 +323,8 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
             } else {
                 imageProjector.enable();
             }
+        } else if (configuration.get(TOTP_ENABLED)) {
+            logger.warn("2FA is enabled in the configuration, but Protocolize support is unavailable. Disabling 2FA-dependent features for this session.");
         }
 
         totpProvider = imageProjector == null ? null : new AuthenticTOTPProvider(this);
@@ -638,8 +645,8 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
         try {
             // Use multiple endpoints for better reliability
-            var updateInfo = checkLatestRelease();
-            
+            var updateInfo = sanitizeUpdateInfo(checkLatestRelease());
+
             if (updateInfo == null) {
                 logger.warn("Unable to check for updates - all methods failed");
                 return;
@@ -647,14 +654,19 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
             List<Release> behind = new ArrayList<>();
             SemanticVersion latest = updateInfo.latest();
-            
+
+            if (latest == null) {
+                logger.warn("Unable to check for updates - no valid release version data was returned");
+                return;
+            }
+
             // Check if we're behind
             var comparison = this.version.compare(latest);
-            
+
             if (comparison < 0) {
                 // We're behind, add all versions we're missing
                 for (Release release : updateInfo.allReleases()) {
-                    if (this.version.compare(release.version()) < 0) {
+                    if (release.version() != null && this.version.compare(release.version()) < 0) {
                         behind.add(release);
                     }
                 }
@@ -667,18 +679,18 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
                 logger.warn("!! YOU ARE RUNNING AN OUTDATED VERSION OF NEXAUTH !!");
                 logger.info("Current version: %s | Latest version: %s | Versions behind: %d".formatted(
                     getVersion(), latest, behind.size()));
-                
+
                 // Show only the most recent updates (max 5)
                 var recentUpdates = behind.subList(0, Math.min(behind.size(), 5));
                 logger.info("Recent updates you're missing:");
                 for (Release release : recentUpdates) {
                     logger.info("  → %s (%s)".formatted(release.name(), release.version()));
                 }
-                
+
                 if (behind.size() > 5) {
                     logger.info("  ... and %d more versions".formatted(behind.size() - 5));
                 }
-                
+
                 logger.warn("!! PLEASE UPDATE TO THE LATEST VERSION !!");
                 logger.info("Download: https://github.com/Xreatlabs/NexAuth/releases/latest");
             }
@@ -691,25 +703,25 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
     private UpdateInfo checkLatestRelease() {
         // Method 1: Try GitHub API first
         try {
-            return checkGitHubAPI();
+            return sanitizeUpdateInfo(checkGitHubAPI());
         } catch (Exception e) {
             logger.debug("GitHub API check failed: %s".formatted(e.getMessage()));
         }
-        
+
         // Method 2: Try GitHub releases RSS feed as backup
         try {
-            return checkGitHubRSSFeed();
+            return sanitizeUpdateInfo(checkGitHubRSSFeed());
         } catch (Exception e) {
             logger.debug("GitHub RSS feed check failed: %s".formatted(e.getMessage()));
         }
-        
+
         // Method 3: Try direct GitHub releases page parsing as last resort
         try {
-            return checkGitHubReleasesPage();
+            return sanitizeUpdateInfo(checkGitHubReleasesPage());
         } catch (Exception e) {
             logger.debug("GitHub releases page check failed: %s".formatted(e.getMessage()));
         }
-        
+
         return null;
     }
 
@@ -728,17 +740,27 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
             for (JsonElement raw : root) {
                 var release = raw.getAsJsonObject();
-                
+
                 // Skip pre-releases and drafts
-                if (release.get("prerelease").getAsBoolean() || release.get("draft").getAsBoolean()) {
+                if (release.get("prerelease") != null && release.get("prerelease").getAsBoolean()) {
                     continue;
                 }
-                
-                var version = SemanticVersion.parse(release.get("tag_name").getAsString());
-                var name = release.get("name").getAsString();
-                
+                if (release.get("draft") != null && release.get("draft").getAsBoolean()) {
+                    continue;
+                }
+
+                var versionElement = release.get("tag_name");
+                var version = versionElement == null ? null : SemanticVersion.parse(versionElement.getAsString());
+                if (version == null) {
+                    logger.debug("Skipping GitHub release with invalid tag: %s".formatted(versionElement));
+                    continue;
+                }
+
+                var nameElement = release.get("name");
+                var name = nameElement == null ? "Unknown release" : nameElement.getAsString();
+
                 releases.add(new Release(version, name));
-                
+
                 if (latest == null) {
                     latest = version;
                 }
@@ -756,41 +778,41 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
         try (var in = connection.getInputStream()) {
             var content = new String(in.readAllBytes());
-            
+
             // Simple regex parsing for RSS feed
             var pattern = java.util.regex.Pattern.compile("<title>([^<]+)</title>");
             var matcher = pattern.matcher(content);
-            
+
             List<Release> releases = new ArrayList<>();
             SemanticVersion latest = null;
-            
+
             while (matcher.find()) {
                 var title = matcher.group(1);
                 if (title.contains("NexAuth") && !title.equals("Release notes from NexAuth")) {
-                    try {
-                        // Extract version from title
-                        var versionPattern = java.util.regex.Pattern.compile("v?([0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-zA-Z0-9]+)?)");
-                        var versionMatcher = versionPattern.matcher(title);
-                        
-                        if (versionMatcher.find()) {
-                            var version = SemanticVersion.parse(versionMatcher.group(1));
-                            releases.add(new Release(version, title));
-                            
-                            if (latest == null) {
-                                latest = version;
-                            }
+                    // Extract version from title
+                    var versionPattern = java.util.regex.Pattern.compile("v?([0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-zA-Z0-9]+)?)");
+                    var versionMatcher = versionPattern.matcher(title);
+
+                    if (versionMatcher.find()) {
+                        var version = SemanticVersion.parse(versionMatcher.group(1));
+                        if (version == null) {
+                            logger.debug("Skipping RSS release with invalid version title: %s".formatted(title));
+                            continue;
                         }
-                    } catch (Exception e) {
-                        // Skip invalid versions
+                        releases.add(new Release(version, title));
+
+                        if (latest == null) {
+                            latest = version;
+                        }
                     }
                 }
             }
-            
+
             if (latest != null) {
                 return new UpdateInfo(latest, releases);
             }
         }
-        
+
         throw new Exception("No valid releases found in RSS feed");
     }
 
@@ -802,37 +824,53 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
         try (var in = connection.getInputStream()) {
             var content = new String(in.readAllBytes());
-            
+
             // Parse HTML for release tags
             var pattern = java.util.regex.Pattern.compile("href=\"/Xreatlabs/NexAuth/releases/tag/([^\"]+)\"");
             var matcher = pattern.matcher(content);
-            
+
             List<Release> releases = new ArrayList<>();
             SemanticVersion latest = null;
-            
+
             while (matcher.find()) {
-                try {
-                    var tagName = matcher.group(1);
-                    var version = SemanticVersion.parse(tagName);
-                    releases.add(new Release(version, "NexAuth " + tagName));
-                    
-                    if (latest == null) {
-                        latest = version;
-                    }
-                } catch (Exception e) {
-                    // Skip invalid versions
+                var tagName = matcher.group(1);
+                var version = SemanticVersion.parse(tagName);
+                if (version == null) {
+                    logger.debug("Skipping HTML release with invalid tag: %s".formatted(tagName));
+                    continue;
+                }
+                releases.add(new Release(version, "NexAuth " + tagName));
+
+                if (latest == null) {
+                    latest = version;
                 }
             }
-            
+
             if (latest != null) {
                 return new UpdateInfo(latest, releases);
             }
         }
-        
+
         throw new Exception("No valid releases found on releases page");
     }
 
-    private record UpdateInfo(SemanticVersion latest, List<Release> allReleases) {
+    static UpdateInfo sanitizeUpdateInfo(UpdateInfo updateInfo) {
+        if (updateInfo == null) {
+            return null;
+        }
+
+        List<Release> validReleases = AuthRuntimeGuards.validReleases(updateInfo.allReleases());
+
+        SemanticVersion latest = AuthRuntimeGuards.resolveLatestVersion(updateInfo.latest(), validReleases);
+
+        if (latest == null) {
+            return null;
+        }
+
+        return new UpdateInfo(latest, validReleases);
+    }
+
+    record UpdateInfo(SemanticVersion latest, List<Release> allReleases) {
     }
 
     public UUID generateNewUUID(String name, @Nullable UUID premiumID) {
@@ -944,6 +982,15 @@ public abstract class AuthenticNexAuth<P, S> implements NexAuthPlugin<P, S> {
 
     public LoginTryListener<P, S> getLoginTryListener() {
         return loginTryListener;
+    }
+
+    @Nullable
+    public User getUserForPlayer(P player) {
+        if (player == null || databaseProvider == null) {
+            return null;
+        }
+
+        return AuthRuntimeGuards.resolveUser(databaseProvider, platformHandle.getUUIDForPlayer(player), platformHandle.getUsernameForPlayer(player));
     }
 
     public void onExit(P player) {

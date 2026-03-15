@@ -96,6 +96,11 @@ public class VelocityListeners extends AuthenticListeners<VelocityNexAuth, Playe
 
         var profile = plugin.getDatabaseProvider().getByName(event.getUsername());
 
+        if (profile == null) {
+            plugin.getLogger().error("Failed to retrieve profile for user: " + event.getUsername() + " - database unavailable");
+            return;
+        }
+
         var gProfile = event.getOriginalProfile();
 
         event.setGameProfile(new GameProfile(profile.getUuid(), gProfile.getName(), gProfile.getProperties()));
@@ -171,7 +176,10 @@ public class VelocityListeners extends AuthenticListeners<VelocityNexAuth, Playe
                 event.setResult(KickedFromServerEvent.DisconnectPlayer.create(message));
             } else {
                 try {
-                    var server = plugin.getServerHandler().chooseLobbyServer(plugin.getDatabaseProvider().getByUUID(player.getUniqueId()), player, false, true);
+                    var user = plugin.getDatabaseProvider().getByUUID(player.getUniqueId());
+                    if (user == null) throw new NoSuchElementException();
+
+                    var server = plugin.getServerHandler().chooseLobbyServer(user, player, false, true);
 
                     if (server == null) throw new NoSuchElementException();
 

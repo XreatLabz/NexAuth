@@ -16,6 +16,9 @@ import xyz.xreatlabs.nexauth.api.event.events.AuthenticatedEvent;
 import xyz.xreatlabs.nexauth.common.AuthenticNexAuth;
 import xyz.xreatlabs.nexauth.common.command.InvalidCommandArgument;
 import xyz.xreatlabs.nexauth.common.database.AuthenticUser;
+import xyz.xreatlabs.nexauth.common.config.reload.ConfigDiff;
+import xyz.xreatlabs.nexauth.common.config.reload.ConfigSnapshot;
+import xyz.xreatlabs.nexauth.common.config.reload.ReloadDiffRenderer;
 import xyz.xreatlabs.nexauth.common.doctor.DoctorJsonExporter;
 import xyz.xreatlabs.nexauth.common.doctor.DoctorRenderer;
 import xyz.xreatlabs.nexauth.common.doctor.DoctorService;
@@ -181,6 +184,61 @@ public class NexAuthCommand<P> extends StaffCommand<P> {
             }
 
             audience.sendMessage(getMessage("info-dumped", "%file%", dumpFile.getPath()));
+        });
+    }
+
+    @Subcommand("reload")
+    @CommandPermission("nexauth.reload")
+    public CompletionStage<Void> onReload(Audience audience) {
+        return runAsync(() -> {
+            audience.sendMessage(getMessage("info-reloading"));
+
+            // Snapshot before reload
+            var configBefore = ConfigSnapshot.captureConfig(plugin.getConfiguration().getHelper());
+            var messagesBefore = plugin.getMessages().getRawHelper() != null
+                    ? ConfigSnapshot.captureMessages(plugin.getMessages().getRawHelper())
+                    : java.util.Map.<String, String>of();
+
+            // Reload config
+            try {
+                plugin.getConfiguration().reload(plugin);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new InvalidCommandArgument(getMessage("error-unknown"));
+            } catch (CorruptedConfigurationException e) {
+                var cause = GeneralUtil.getFurthestCause(e);
+                throw new InvalidCommandArgument(getMessage("error-corrupted-configuration",
+                        "%cause%", "%s: %s".formatted(cause.getClass().getSimpleName(), cause.getMessage()))
+                );
+            }
+
+            // Reload messages
+            try {
+                plugin.getMessages().reload(plugin);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new InvalidCommandArgument(getMessage("error-unknown"));
+            } catch (CorruptedConfigurationException e) {
+                var cause = GeneralUtil.getFurthestCause(e);
+                throw new InvalidCommandArgument(getMessage("error-corrupted-messages",
+                        "%cause%", "%s: %s".formatted(cause.getClass().getSimpleName(), cause.getMessage()))
+                );
+            }
+
+            plugin.getCommandProvider().injectMessages();
+
+            // Snapshot after reload
+            var configAfter = ConfigSnapshot.captureConfig(plugin.getConfiguration().getHelper());
+            var messagesAfter = plugin.getMessages().getRawHelper() != null
+                    ? ConfigSnapshot.captureMessages(plugin.getMessages().getRawHelper())
+                    : java.util.Map.<String, String>of();
+
+            // Diff and render
+            var configChanges = ConfigDiff.diff(configBefore, configAfter);
+            var messageChanges = ConfigDiff.diff(messagesBefore, messagesAfter);
+            var diffComponent = ReloadDiffRenderer.render(configChanges, messageChanges);
+
+            audience.sendMessage(diffComponent);
         });
     }
 

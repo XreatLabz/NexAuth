@@ -1,0 +1,53 @@
+{
+  "workflow": {
+    "phases": {
+      "brainstorm": "active",
+      "plan": "pending",
+      "execute": "pending",
+      "verify": "pending",
+      "review": "pending",
+      "finish": "pending"
+    },
+    "currentPhase": "brainstorm",
+    "artifacts": {
+      "brainstorm": null,
+      "plan": null,
+      "execute": null,
+      "verify": null,
+      "review": null,
+      "finish": null
+    },
+    "prompted": {
+      "brainstorm": false,
+      "plan": false,
+      "execute": false,
+      "verify": false,
+      "review": false,
+      "finish": false
+    }
+  },
+  "tdd": {
+    "phase": "red-pending",
+    "testFiles": [
+      "/root/NexAuth/Plugin/src/test/java/xyz/xreatlabs/nexauth/common/config/reload/ConfigDiffTest.java",
+      "/root/NexAuth/Plugin/src/test/java/xyz/xreatlabs/nexauth/common/config/reload/ReloadDiffRendererTest.java"
+    ],
+    "sourceFiles": [
+      "/root/NexAuth/Plugin/src/main/java/xyz/xreatlabs/nexauth/common/config/reload/ConfigSnapshot.java",
+      "/root/NexAuth/Plugin/src/main/java/xyz/xreatlabs/nexauth/common/config/reload/ConfigDiff.java",
+      "/root/NexAuth/Plugin/src/main/java/xyz/xreatlabs/nexauth/common/config/reload/ReloadDiffRenderer.java",
+      "/root/NexAuth/Plugin/src/main/java/xyz/xreatlabs/nexauth/common/config/HoconMessages.java",
+      "/root/NexAuth/Plugin/src/main/java/xyz/xreatlabs/nexauth/common/command/commands/staff/NexAuthCommand.java"
+    ],
+    "redVerificationPending": true
+  },
+  "debug": {
+    "active": false,
+    "investigated": true,
+    "fixAttempts": 0
+  },
+  "verification": {
+    "verified": false,
+    "verificationWaived": false
+  }
+}

@@ -113,4 +113,12 @@ public class HoconMessages implements Messages {
     public String getRawMessage(String key) {
         return rawMessages.getHelper().getString(key);
     }
+
+    /**
+     * Returns the raw ConfigurateHelper for the messages configuration.
+     * Used by ConfigSnapshot to capture message values before reload.
+     */
+    public ConfigurateHelper getRawHelper() {
+        return rawMessages != null ? rawMessages.getHelper() : null;
+    }
 }

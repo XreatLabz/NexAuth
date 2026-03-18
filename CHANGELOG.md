@@ -1,119 +1,89 @@
-# NexAuth Changelog
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.0.0] - 2026-03-18
+
+### Added
+- Integrated **NexLimbo** as the recommended limbo system for proxy-based authentication flows.
+- Added support for Minecraft **1.21.5** through **1.21.10**.
+- Added operator-facing doctor and status diagnostics to improve production observability.
+- Added packet-level inventory hiding for unauthenticated players.
+- Added premium-player title support on auto-login.
+
+### Changed
+- Promoted NexAuth to its first stable production release.
+- Updated the Paper API target to **1.21.10-R0.1-SNAPSHOT**.
+- Updated Velocity compatibility to the latest supported snapshot line.
+- Replaced NanoLimboPlugin dependency references with NexLimbo-focused integration and documentation.
+- Improved update-check reliability with GitHub API, RSS feed, and HTML parsing fallbacks.
+- Updated branding and default database naming to use **nexauth** consistently.
+- Unified `/nexauth reload` behavior with configuration diff display.
+
+### Fixed
+- Hardened Velocity startup authentication flow to avoid startup/login failures when dependent systems are not fully ready.
+- Added null-safety guards for database lookup failures in platform listeners.
+- Fixed Adventure dependency forcing so compatibility constraints apply only to runtime configurations.
+- Improved release runtime packaging by switching Netty to Libby runtime download instead of shading it directly.
+
+### Security
+- Continued support for secure password hashing, TOTP 2FA, and premium-account authentication flows across supported platforms.
 
 ## [0.0.1-beta3] - 2025-10-09
 
-### 💬 **Developer Note**
+### Added
+- Added support for Minecraft **1.21.5** through **1.21.10**.
+- Integrated **NexLimbo** as the official limbo system for NexAuth.
+- Replaced NanoLimboPlugin dependency references with NexLimbo integration across the project.
 
-The project was stale for about 2 months as I was extensively testing different limbo systems to find the perfect fit for NexAuth. After thorough evaluation, I'm excited to announce that **NexLimbo**—specifically designed and optimized for NexAuth—has been successfully integrated into the project. This marks a significant milestone in providing seamless authentication experiences.
+### Changed
+- Updated the Paper API target to **1.21.10-R0.1-SNAPSHOT**.
+- Updated build configuration for better dependency management.
+- Integrated NexLimbo as a local subproject for tighter integration.
+- Renamed limbo-related configuration references to NexLimbo naming.
 
-### 🚀 **What's New**
-
-#### ✨ Minecraft Version Support
-- **Added support for Minecraft 1.21.5 through 1.21.10**
-- Updated Paper API to **1.21.10-R0.1-SNAPSHOT**
-- Full compatibility with latest Velocity 3.4.0-SNAPSHOT
-- Supports all Minecraft versions from **1.13 to 1.21.10**
-
-#### 🔧 NexLimbo Integration
-- **Integrated NexLimbo** as the official limbo system for NexAuth
-- Replaced NanoLimboPlugin dependency with custom NexLimbo implementation
-- NexLimbo is specifically designed and optimized for NexAuth's authentication flow
-- Enhanced limbo server performance and stability
-- Updated all plugin references and dependencies from NanoLimbo to NexLimbo
-
-### 🛠️ **Technical Improvements**
-
-- **Adventure API Compatibility**: Fixed compatibility issues with Paper 1.21.10 by restricting Adventure version forcing to runtime configurations only
-- **Build System**: Updated Gradle configuration for better dependency management
-- **Project Structure**: Integrated NexLimbo as a local subproject for tighter integration
-- **Configuration**: All limbo-related configurations now use NexLimbo naming
-
-### 📋 **Supported Platforms**
-
-- **Paper/Purpur**: 1.13 - 1.21.10
-- **Velocity**: 3.4.0-SNAPSHOT
-- **BungeeCord/Waterfall**: Latest
-- **Java**: 21+
+### Fixed
+- Fixed Paper **1.21.10** compatibility by restricting Adventure version forcing to runtime configurations only.
 
 ## [0.0.1-beta2] - 2025-07-16
 
-### 🎉 **New Features**
+### Added
+- Added premium account titles for premium-player auto-login.
+- Added packet-level inventory hiding for unauthenticated players.
+- Added enhanced update-check fallback methods.
 
-- **Premium Account Titles**: Added title display for premium players on auto-login
-- **Inventory Hiding**: Implemented packet-level inventory hiding for unauthenticated players
-- **Enhanced Update Checker**: Added multiple fallback methods for better reliability
+### Changed
+- Updated all database references from `librelogin` to `nexauth`.
+- Rebranded command permissions and project branding throughout the codebase.
+- Improved title handling to use the existing `use-titles` configuration option.
 
-### 🔄 **Updates**
-
-- **Configuration**: Updated all database references from "librelogin" to "nexauth"
-- **Branding**: Complete rebranding throughout the codebase
-- **Update System**: Improved update checking with GitHub API, RSS feed, and HTML parsing fallbacks
-- **Title System**: Premium titles now use existing `use-titles` configuration option
-
-### 🛠️ **Technical Improvements**
-
-- **PacketEvents Integration**: Added packet-level inventory hiding using PacketEvents 2.7.0
-- **Database Connectors**: Updated default database names to use "nexauth" branding
-- **Command Permissions**: Updated all permission nodes to use "nexauth" prefix
-- **Error Handling**: Enhanced error handling in update checker system
+### Fixed
+- Improved update-checker error handling.
 
 ## [0.0.1-beta] - 2025-07-15
 
-### 🎉 **Initial NexAuth Release**
+### Added
+- Initial beta release of **NexAuth**.
+- Added support for Minecraft **1.21.7**.
+- Added multi-platform support for Paper, Velocity, and BungeeCord.
+- Added support for MySQL, PostgreSQL, and SQLite.
+- Added TOTP 2FA, premium integration, email support, and migration tooling.
 
-This is the initial beta release of **NexAuth**, a modern authentication plugin forked and rebranded for enhanced security and performance.
+### Changed
+- Updated NanoLimboPlugin API usage to **1.0.15**.
+- Updated GitHub links and documentation references to the NexAuth repository.
+- Optimized shadow JAR generation and release API usage.
+- Fixed semantic-version parsing for beta releases.
 
-### 🔄 **Latest Updates**
+### Security
+- Documented the beta release as pre-production and recommended backups/testing before use.
 
-- **Minecraft 1.21.7**: Added support for Minecraft 1.21.7
-- **NanoLimboPlugin API**: Updated to version 1.0.15 for latest features and improvements
-- **Velocity Support**: Enhanced compatibility with latest Velocity snapshots
-- **Performance**: Improved limbo server integration and stability
-- **GitHub Integration**: Updated all links to use new repository at https://github.com/Xreatlabs/NexAuth
-- **Version Parsing**: Fixed semantic version parsing for beta releases
-- **Forbidden Passwords**: Updated to use new GitHub repository for password list
-
-### 🛠️ **Technical Improvements**
-
-- **API Compatibility**: Enhanced NanoLimboPlugin integration with secure profile support
-- **Configuration**: Updated all GitHub links and documentation references
-- **Build System**: Optimized shadow JAR generation for better performance
-- **Update Checker**: Configured to use new GitHub releases API
-
-### 🔧 **Features**
-
-- **Multi-platform Support**: Paper, Velocity, BungeeCord
-- **Database Support**: MySQL, PostgreSQL, SQLite
-- **Authentication**: Secure password hashing with multiple algorithms
-- **TOTP 2FA**: Time-based One-Time Password support
-- **Premium Integration**: Automatic premium player detection
-- **Limbo Server**: Integrated authentication limbo experience
-- **Email Support**: Password reset via email
-- **Migration Tools**: Import from various auth plugins
-
-### 📋 **Version Information**
-
-- **Version**: 0.0.1-beta2 (pre-production)
-- **Java**: Requires Java 17+
-- **Platforms**: Paper, Velocity, BungeeCord
-- **License**: Mozilla Public License 2.0
-
-### ⚠️ **Beta Notice**
-
-This is a **pre-production beta release** intended for testing purposes. Please:
-
-1. **Backup your data** before installation
-2. **Test thoroughly** in a development environment
-3. **Report any issues** to the repository
-4. **Update your documentation** to reference NexAuth
-
-### 🔗 **Links**
-
-- **Repository**: https://github.com/Xreatlabs/NexAuth
-- **Documentation**: https://github.com/Xreatlabs/NexAuth/wiki
-- **Issues**: https://github.com/Xreatlabs/NexAuth/issues
-- **Contributors**: https://github.com/Xreatlabs/NexAuth/graphs/contributors
-
----
-
-**Note**: This is a complete rebranding and enhancement of the original authentication plugin with improved security, performance, and modern features.
+[Unreleased]: https://github.com/Xreatlabs/NexAuth/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Xreatlabs/NexAuth/compare/0.0.1-beta3...v1.0.0
+[0.0.1-beta3]: https://github.com/Xreatlabs/NexAuth/compare/0.0.1-beta2...0.0.1-beta3
+[0.0.1-beta2]: https://github.com/Xreatlabs/NexAuth/compare/0.0.1-beta...0.0.1-beta2
+[0.0.1-beta]: https://github.com/Xreatlabs/NexAuth/releases/tag/0.0.1-beta

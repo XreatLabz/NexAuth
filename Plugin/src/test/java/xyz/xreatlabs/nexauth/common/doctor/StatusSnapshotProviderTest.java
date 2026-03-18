@@ -23,7 +23,7 @@ class StatusSnapshotProviderTest {
         var metrics = new JsonObject();
         metrics.addProperty("total", 3);
         var provider = new StatusSnapshotProvider(
-                "0.0.1-beta3",
+                "1.0.0",
                 "test-platform",
                 "DEGRADE",
                 true,
@@ -36,7 +36,7 @@ class StatusSnapshotProviderTest {
 
         var snapshot = provider.create();
 
-        assertEquals("0.0.1-beta3", snapshot.version());
+        assertEquals("1.0.0", snapshot.version());
         assertEquals("test-platform", snapshot.platform());
         assertEquals("DEGRADE", snapshot.failurePolicyMode());
         assertTrue(snapshot.multiProxyEnabled());
@@ -50,7 +50,7 @@ class StatusSnapshotProviderTest {
     @Test
     void preservesUnavailableOptionalSystems() {
         var provider = new StatusSnapshotProvider(
-                "0.0.1-beta3",
+                "1.0.0",
                 "test-platform",
                 "HARD_FAIL",
                 false,

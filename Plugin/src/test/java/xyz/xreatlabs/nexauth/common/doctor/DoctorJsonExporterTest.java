@@ -21,7 +21,7 @@ class DoctorJsonExporterTest {
         var metrics = new JsonObject();
         metrics.addProperty("total", 4);
         var status = new StatusSnapshot(
-                "0.0.1-beta3",
+                "1.0.0",
                 "velocity",
                 "DEGRADE",
                 true,
@@ -38,7 +38,7 @@ class DoctorJsonExporterTest {
 
         var json = DoctorJsonExporter.export(status, doctor);
 
-        assertEquals("0.0.1-beta3", json.getAsJsonObject("status").get("version").getAsString());
+        assertEquals("1.0.0", json.getAsJsonObject("status").get("version").getAsString());
         assertEquals("DEGRADE", json.getAsJsonObject("status").get("failurePolicyMode").getAsString());
         assertEquals(4, json.getAsJsonObject("status").getAsJsonObject("metrics").get("total").getAsLong());
 

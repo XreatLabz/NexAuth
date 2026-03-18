@@ -13,14 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class SemanticVersionTest {
 
     @Test
-    void parseValidBetaVersion() {
-        var version = SemanticVersion.parse("0.0.1-beta2");
+    void parseValidStableVersion() {
+        var version = SemanticVersion.parse("1.0.0");
 
         assertNotNull(version);
-        assertEquals(0, version.major());
+        assertEquals(1, version.major());
         assertEquals(0, version.minor());
-        assertEquals(1, version.patch());
-        assertTrue(version.dev());
+        assertEquals(0, version.patch());
+        assertFalse(version.dev());
     }
 
     @Test
@@ -32,7 +32,7 @@ class SemanticVersionTest {
 
     @Test
     void compareTreatsNullAsUnknownNewerVersion() {
-        var current = SemanticVersion.parse("0.0.1-beta2");
+        var current = SemanticVersion.parse("1.0.0");
 
         assertNotNull(current);
         assertEquals(1, current.compare(null));

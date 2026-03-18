@@ -28,7 +28,7 @@ class StatusRendererTest {
                 List.of("lobby")
         );
         var snapshot = new StatusSnapshot(
-                "0.0.1-beta3",
+                "1.0.0",
                 "velocity",
                 "DEGRADE",
                 true,
@@ -42,7 +42,7 @@ class StatusRendererTest {
         var rendered = StatusRenderer.render(snapshot);
 
         assertEquals("info-status-header", rendered.getFirst().messageKey());
-        assertEquals(List.of("%version%", "0.0.1-beta3", "%platform%", "velocity"), rendered.getFirst().replacements());
+        assertEquals(List.of("%version%", "1.0.0", "%platform%", "velocity"), rendered.getFirst().replacements());
         assertEquals(List.of(
                 new RenderedLine("info-status-entry", "%label%", "Failure policy", "%value%", "DEGRADE"),
                 new RenderedLine("info-status-entry", "%label%", "Multi-proxy", "%value%", "Enabled"),

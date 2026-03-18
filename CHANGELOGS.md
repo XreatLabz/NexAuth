@@ -1,38 +1,38 @@
 # NexAuth Release Notes
 
-## 🎉 NexAuth 0.0.1-beta3
+## 🎉 NexAuth 1.0.0
 
-### 💬 Developer Note
+### 💬 Production Release
 
-The project was stale for about 2 months as I was extensively testing different limbo systems to find the perfect fit for NexAuth. After thorough evaluation, I'm excited to announce that **NexLimbo**—specifically designed and optimized for NexAuth—has been successfully integrated into the project. This marks a significant milestone in providing seamless authentication experiences.
+This is the first stable production release of **NexAuth**. It promotes the work completed across the beta cycle into a `1.0.0` baseline intended for real-world deployments across Paper, Velocity, and BungeeCord/Waterfall networks.
 
 ---
 
 ### 🚀 What's New
 
-#### ✨ Minecraft Version Support
-- **Added support for Minecraft 1.21.5 through 1.21.10**
-- Updated Paper API to **1.21.10-R0.1-SNAPSHOT**
-- Full compatibility with latest Velocity 3.4.0-SNAPSHOT
-- Supports all Minecraft versions from **1.13 to 1.21.10**
+#### ✨ Stable Platform Support
+- **Production-ready 1.0.0 release** of NexAuth
+- Support for Minecraft **1.13 through 1.21.10**
+- Updated Paper API target to **1.21.10-R0.1-SNAPSHOT**
+- Ongoing compatibility with modern Velocity proxy environments
 
-#### 🔧 NexLimbo Integration
-- **Integrated NexLimbo** as the official limbo system for NexAuth
-- Replaced NanoLimboPlugin dependency with custom NexLimbo implementation
-- NexLimbo is specifically designed and optimized for NexAuth's authentication flow
-- Enhanced limbo server performance and stability
-- Updated all plugin references and dependencies
+#### 🔧 Authentication Platform Improvements
+- **Integrated NexLimbo** as the recommended limbo system for NexAuth proxy setups
+- Added operator-facing **doctor** and **status** commands for faster diagnostics
+- Improved update-check reliability with layered GitHub API / feed / HTML fallbacks
+- Unified `/nexauth reload` behavior with configuration diff display
 
-### 🛠️ Technical Improvements
+### 🛠️ Reliability and Runtime Improvements
 
-- **Adventure API Compatibility**: Fixed compatibility issues with Paper 1.21.10 by restricting Adventure version forcing to runtime configurations only
-- **Build System**: Updated Gradle configuration for better dependency management
-- **Project Structure**: Integrated NexLimbo as a local subproject for tighter integration
+- **Velocity startup hardening** to reduce startup/login failures when dependent systems are still initializing
+- **Runtime packaging cleanup** by moving Netty to Libby runtime download handling
+- **Adventure compatibility fix** so version forcing only applies to runtime configurations
+- **Null-safety improvements** around database lookup failures in platform listeners
 
 ### 📋 Supported Platforms
 
 - **Paper/Purpur**: 1.13 - 1.21.10
-- **Velocity**: 3.4.0-SNAPSHOT
+- **Velocity**: Supported modern snapshot line
 - **BungeeCord/Waterfall**: Latest
 - **Java**: 21+
 
@@ -40,15 +40,15 @@ The project was stale for about 2 months as I was extensively testing different 
 
 1. Download `NexAuth.jar` from the assets below
 2. Place it in your proxy/server `plugins` folder
-3. Install **NexLimbo** for the complete authentication experience
+3. Install **NexLimbo** for the complete proxy authentication limbo experience
 4. Restart your server
-5. Configure in `plugins/NexAuth/config.yml`
+5. Configure NexAuth for your deployment
 
 ### ⚠️ Important Notes
 
-- **Production Ready**: This release has been thoroughly tested and is ready for production use.
-- **NexLimbo Required**: For the full authentication limbo experience, install NexLimbo on your proxy.
-- **Backup**: Always backup your data before updating.
+- **Production Ready**: This release is intended for production use.
+- **Recommended Dependency**: Install NexLimbo on proxy setups for the best authentication flow.
+- **Backups**: Always back up your data before updating.
 
 ### 🔗 Links
 
@@ -59,4 +59,4 @@ The project was stale for about 2 months as I was extensively testing different 
 
 ---
 
-**Full Changelog**: https://github.com/Xreatlabs/NexAuth/compare/0.0.1-beta2...0.0.1-beta3
+**Full Changelog**: https://github.com/Xreatlabs/NexAuth/compare/0.0.1-beta3...v1.0.0

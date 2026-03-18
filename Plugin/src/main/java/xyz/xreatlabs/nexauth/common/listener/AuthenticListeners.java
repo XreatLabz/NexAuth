@@ -60,19 +60,18 @@ public class AuthenticListeners<Plugin extends AuthenticNexAuth<P, S>, P, S> {
         var sessionTime = Duration.ofSeconds(plugin.getConfiguration().get(ConfigurationKeys.SESSION_TIMEOUT));
 
         if (user.autoLoginEnabled()) {
-            plugin.delay(() -> {
-                var audience = plugin.getPlatformHandle().getAudienceForPlayer(player);
-                audience.sendMessage(plugin.getMessages().getMessage("info-premium-logged-in"));
-                
-                // Show premium title if enabled
-                if (plugin.getConfiguration().get(ConfigurationKeys.USE_TITLES)) {
-                    audience.showTitle(Title.title(
-                        plugin.getMessages().getMessage("title-premium"),
-                        Component.empty(),
-                        Title.Times.of(Duration.ofMillis(0), Duration.ofMillis(3000), Duration.ofMillis(500))
-                    ));
-                }
-            }, 500);
+            var audience = plugin.getPlatformHandle().getAudienceForPlayer(player);
+            PremiumAutoLoginFeedback.notify(
+                    audience,
+                    plugin.getMessages().getMessage("info-premium-logged-in"),
+                    Title.title(
+                            plugin.getMessages().getMessage("title-premium"),
+                            Component.empty(),
+                            Title.Times.of(Duration.ofMillis(0), Duration.ofMillis(3000), Duration.ofMillis(500))
+                    ),
+                    plugin.getConfiguration().get(ConfigurationKeys.USE_TITLES),
+                    task -> plugin.delay(task, 500)
+            );
             plugin.getEventProvider().fire(plugin.getEventTypes().authenticated, new AuthenticAuthenticatedEvent<>(user, player, plugin, AuthenticatedEvent.AuthenticationReason.PREMIUM));
         } else if (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now())) {
             plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-session-logged-in")), 500);
